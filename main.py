@@ -119,6 +119,25 @@ def change_simplex_table(res_parts, old_matrix=np.array([])):
     return new_matrix
 
 
+def printer(x_mat=[], matrix=np.array([])):
+    print("Базис")
+    for i in range(len(x_mat[1])):
+        print(x_mat[1][i] + " = " + str(matrix[i][0]))
+    print("F = " + str(matrix[matrix.shape[1] - 1][0]))
+
+
+a = np.array([[2, 1, 1],
+              [1, 4, 0],
+              [0, 0.5, 1]])
+
+b = np.array([4, 3, 6])
+
+c = np.array([8, 6, 2])
+
+x_matrix = [[0, "x1", "x2", "x3"],
+            ["x4", "x5", "x6"]]
+
+'''
 a = np.array([[1, -2, 1],
               [-2, 1, 0],
               [1, 1, 0]])
@@ -129,6 +148,7 @@ c = np.array([-1, 1, 0])
 
 x_matrix = [[0, "x1", "x2"],
             ["x3", "x4", "x5"]]
+'''
 
 d = do_matrix_in_canonical_form(a, b, c)
 
@@ -145,7 +165,6 @@ while True:
     x_matrix = change_x_matrix(resolve_parts[0], resolve_parts[1], x_matrix)
     d = change_simplex_table(resolve_parts, d)
 
-
 while True:
     key_line = 0
     for i in range(1, d.shape[0]):
@@ -157,9 +176,4 @@ while True:
     x_matrix = change_x_matrix(resolve_parts[0], resolve_parts[1], x_matrix)
     d = change_simplex_table(resolve_parts, d)
 
-print(d)
-print(x_matrix)
-
-# regular_define_resolve_parts(1, d)
-# print(d)
-# print(regular_define_resolve_parts(1, d))
+printer(x_matrix, d)
