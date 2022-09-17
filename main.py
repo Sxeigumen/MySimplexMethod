@@ -41,30 +41,39 @@ def do_matrix_in_canonical_form(matrix_a=np.array([]), matrix_b=np.array([]), ma
             canonical_matrix[line_count - 1][lower_place] = 0
         else:
             canonical_matrix[line_count - 1][lower_place] = -(matrix_c[lower_place - 1])
-    print(canonical_matrix)
     return canonical_matrix
 
 
-def fix_define_resolve_parts(resolve_line, poor_matrix=np.array([])):
+def fix_define_resolve_parts(key_line, poor_matrix=np.array([])):
     resolve_column = -1
-    for i in range(0, poor_matrix.shape[0]):
-        if poor_matrix[i][resolve_line] < 0:
-            resolve_column = i
-    return [resolve_line, resolve_column]
-
-
-def regular_define_resolve_parts(resolve_column, poor_matrix=np.array([])):
     divisions = []
-    key_elem = poor_matrix[poor_matrix.shape[1] - 1][resolve_column]
+    for i in range(1, poor_matrix.shape[0]):
+        if poor_matrix[key_line][i] < 0:
+            resolve_column = i
+            break
     for i in range(poor_matrix.shape[1] - 1):
-        divisions.append(poor_matrix[i][0] / key_elem)
+        divisions.append(poor_matrix[i][0] / poor_matrix[i][resolve_column])
     div_cop = divisions.copy()
     min_div = min(divisions)
     if min_div < 0:
         while min_div < 0:
             min_div = min(div_cop)
             div_cop.remove(min_div)
-    return divisions.index(min_div)
+    resolve_line = divisions.index(min_div)
+    return [resolve_line, resolve_column]
+
+
+def regular_define_resolve_parts(resolve_column, poor_matrix=np.array([])):
+    divisions = []
+    for i in range(poor_matrix.shape[1] - 1):
+        divisions.append(poor_matrix[i][0] / poor_matrix[i][resolve_column])
+    div_cop = divisions.copy()
+    min_div = min(divisions)
+    if min_div < 0:
+        while min_div < 0:
+            min_div = min(div_cop)
+            div_cop.remove(min_div)
+    return [divisions.index(min_div), resolve_column]
 
 
 def change_simplex_table(res_parts, old_matrix=np.array([])):
@@ -123,10 +132,34 @@ x_matrix = [[0, "x1", "x2"],
 
 d = do_matrix_in_canonical_form(a, b, c)
 
-resolve_parts = fix_define_resolve_parts(1, d)
-x_matrix = change_x_matrix(resolve_parts[0], resolve_parts[1], x_matrix)
+while True:
+    key_line = -1
+    for i in range(d.shape[1] - 1):
+        if d[i][0] < 0:
+            key_line = i
 
-d = change_simplex_table(resolve_parts, d)
-regular_define_resolve_parts(1, d)
+    if key_line == -1:
+        break
+
+    resolve_parts = fix_define_resolve_parts(key_line, d)
+    x_matrix = change_x_matrix(resolve_parts[0], resolve_parts[1], x_matrix)
+    d = change_simplex_table(resolve_parts, d)
+
+
+while True:
+    key_line = 0
+    for i in range(1, d.shape[0]):
+        if d[d.shape[1] - 1][i] > 0:
+            key_line = i
+    if key_line == 0:
+        break
+    resolve_parts = regular_define_resolve_parts(key_line, d)
+    x_matrix = change_x_matrix(resolve_parts[0], resolve_parts[1], x_matrix)
+    d = change_simplex_table(resolve_parts, d)
+
 print(d)
-print(regular_define_resolve_parts(1, d))
+print(x_matrix)
+
+# regular_define_resolve_parts(1, d)
+# print(d)
+# print(regular_define_resolve_parts(1, d))
