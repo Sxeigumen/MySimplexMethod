@@ -45,7 +45,7 @@ def do_matrix_in_canonical_form(matrix_a=np.array([]), matrix_b=np.array([]), ma
     return canonical_matrix
 
 
-def define_resolve_parts(resolve_line, poor_matrix=np.array([])):
+def fix_define_resolve_parts(resolve_line, poor_matrix=np.array([])):
     resolve_column = -1
     for i in range(0, poor_matrix.shape[0]):
         if poor_matrix[i][resolve_line] < 0:
@@ -53,8 +53,21 @@ def define_resolve_parts(resolve_line, poor_matrix=np.array([])):
     return [resolve_line, resolve_column]
 
 
-def change_simplex_table(res_parts, old_matrix=np.array([])):
+def regular_define_resolve_parts(resolve_column, poor_matrix=np.array([])):
+    divisions = []
+    key_elem = poor_matrix[poor_matrix.shape[1] - 1][resolve_column]
+    for i in range(poor_matrix.shape[1] - 1):
+        divisions.append(poor_matrix[i][0] / key_elem)
+    div_cop = divisions.copy()
+    min_div = min(divisions)
+    if min_div < 0:
+        while min_div < 0:
+            min_div = min(div_cop)
+            div_cop.remove(min_div)
+    return divisions.index(min_div)
 
+
+def change_simplex_table(res_parts, old_matrix=np.array([])):
     new_matrix = old_matrix.copy()
     resolve_elem = old_matrix[res_parts[0]][res_parts[1]]
 
@@ -94,27 +107,8 @@ def change_simplex_table(res_parts, old_matrix=np.array([])):
             line_elem = old_matrix[j][res_parts[1]]
             column_elem = old_matrix[res_parts[0]][i]
             new_matrix[j][i] = change_independent_elem(resolve_elem, true_elem, line_elem, column_elem)
-    print(new_matrix)
+    return new_matrix
 
-
-"""
-a = np.array([[2, 1, 1],
-              [1, 4, 0],
-              [0, 0.5, 1]])
-
-b = np.array([4, 3, 6])
-
-c = np.array([8, 6, 2])
-
-d = do_matrix_in_canonical_form(a, b, c)
-"""
-
-"""
-while True:
-    for i in d.shape[1]:
-        if d[i][0] < 0:
-            
-"""
 
 a = np.array([[1, -2, 1],
               [-2, 1, 0],
@@ -129,7 +123,10 @@ x_matrix = [[0, "x1", "x2"],
 
 d = do_matrix_in_canonical_form(a, b, c)
 
-resolve_parts = define_resolve_parts(1, d)
+resolve_parts = fix_define_resolve_parts(1, d)
 x_matrix = change_x_matrix(resolve_parts[0], resolve_parts[1], x_matrix)
 
-change_simplex_table(resolve_parts, d)
+d = change_simplex_table(resolve_parts, d)
+regular_define_resolve_parts(1, d)
+print(d)
+print(regular_define_resolve_parts(1, d))
