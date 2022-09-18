@@ -36,6 +36,7 @@ def do_matrix_in_canonical_form(matrix_a=np.array([]), matrix_b=np.array([]), ma
                 canonical_matrix[lines][place] = matrix_b[lines]
             else:
                 canonical_matrix[lines][place] = matrix_a[lines][place - 1]
+
     for lower_place in range(0, column_count):
         if lower_place == 0:
             canonical_matrix[line_count - 1][lower_place] = 0
@@ -66,6 +67,8 @@ def fix_define_resolve_parts(key_line, poor_matrix=np.array([])):
 def regular_define_resolve_parts(resolve_column, poor_matrix=np.array([])):
     divisions = []
     for i in range(poor_matrix.shape[1] - 1):
+        if poor_matrix[i][resolve_column] == 0:
+            continue
         divisions.append(poor_matrix[i][0] / poor_matrix[i][resolve_column])
     div_cop = divisions.copy()
     min_div = min(divisions)
@@ -137,6 +140,8 @@ c = np.array([8, 6, 2])
 x_matrix = [[0, "x1", "x2", "x3"],
             ["x4", "x5", "x6"]]
 
+flag = "max"    # Добавил flag
+
 '''
 a = np.array([[1, -2, 1],
               [-2, 1, 0],
@@ -150,7 +155,7 @@ x_matrix = [[0, "x1", "x2"],
             ["x3", "x4", "x5"]]
 '''
 
-d = do_matrix_in_canonical_form(a, b, c)
+d = do_matrix_in_canonical_form(a, b, c)  # Добавил flag
 
 while True:
     key_line = -1
@@ -164,12 +169,22 @@ while True:
     resolve_parts = fix_define_resolve_parts(key_line, d)
     x_matrix = change_x_matrix(resolve_parts[0], resolve_parts[1], x_matrix)
     d = change_simplex_table(resolve_parts, d)
+    print(resolve_parts)
+    print(d)
+    print("==================")
 
 while True:
     key_line = 0
-    for i in range(1, d.shape[0]):
-        if d[d.shape[1] - 1][i] > 0:
-            key_line = i
+    if flag == "min":
+        for i in range(1, d.shape[0]):
+            if d[d.shape[1] - 1][i] > 0:
+                key_line = i
+                break
+    if flag == "max":
+        for i in range(1, d.shape[0]):
+            if d[d.shape[1] - 1][i] < 0:
+                key_line = i
+                break
     if key_line == 0:
         break
     resolve_parts = regular_define_resolve_parts(key_line, d)
