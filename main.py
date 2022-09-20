@@ -1,4 +1,5 @@
 import numpy as np
+from data_off_problem import *
 
 
 def change_resolve_element(resolve_elem):
@@ -129,33 +130,9 @@ def printer(x_mat=[], matrix=np.array([])):
     print("F = " + str(matrix[matrix.shape[1] - 1][0]))
 
 
-a = np.array([[2, 1, 1],
-              [1, 4, 0],
-              [0, 0.5, 1]])
-
-b = np.array([4, 3, 6])
-
-c = np.array([8, 6, 2])
-
-x_matrix = [[0, "x1", "x2", "x3"],
-            ["x4", "x5", "x6"]]
-
-flag = "max"    # Добавил flag
-
-'''
-a = np.array([[1, -2, 1],
-              [-2, 1, 0],
-              [1, 1, 0]])
-
-b = np.array([2, -2, 5])
-
-c = np.array([-1, 1, 0])
-
-x_matrix = [[0, "x1", "x2"],
-            ["x3", "x4", "x5"]]
-'''
-
 d = do_matrix_in_canonical_form(a, b, c)  # Добавил flag
+print(d)
+print("==================")
 
 while True:
     key_line = -1
@@ -190,5 +167,8 @@ while True:
     resolve_parts = regular_define_resolve_parts(key_line, d)
     x_matrix = change_x_matrix(resolve_parts[0], resolve_parts[1], x_matrix)
     d = change_simplex_table(resolve_parts, d)
+    print(resolve_parts)
+    print(d)
+    print("==================")
 
 printer(x_matrix, d)
