@@ -1,21 +1,22 @@
+import math
 import numpy as np
 from data_off_problem import *
 
 
 def change_resolve_element(resolve_elem):
-    return 1 / resolve_elem
+    return round(1 / resolve_elem, 3)
 
 
 def change_resolve_line_elements(resolve_elem, true_elem):
-    return true_elem / resolve_elem
+    return round(true_elem / resolve_elem, 3)
 
 
 def change_resolve_column_elements(resolve_elem, true_elem):
-    return -(true_elem / resolve_elem)
+    return -(round(true_elem / resolve_elem, 3))
 
 
 def change_independent_elem(resolve_elem, true_elem, line_elem, column_elem):
-    return true_elem - (line_elem * column_elem) / resolve_elem
+    return round(true_elem - (line_elem * column_elem) / resolve_elem, 3)
 
 
 def change_x_matrix(resolve_line, resolve_column, x_mat=[]):
@@ -25,7 +26,7 @@ def change_x_matrix(resolve_line, resolve_column, x_mat=[]):
     return x_mat
 
 
-def do_matrix_in_canonical_form(matrix_a=np.array([]), matrix_b=np.array([]), matrix_c=np.array([])):
+def do_matrix_in_canonical_form(work_mode, matrix_a=np.array([]), matrix_b=np.array([]), matrix_c=np.array([])):
     column_count = matrix_a.shape[0] + 1
     line_count = matrix_a.shape[1] + 1
     size_of_new_matrix = a.shape[0] * a.shape[1] + b.shape[0] + c.shape[0] + 1
@@ -42,15 +43,18 @@ def do_matrix_in_canonical_form(matrix_a=np.array([]), matrix_b=np.array([]), ma
         if lower_place == 0:
             canonical_matrix[line_count - 1][lower_place] = 0
         else:
-            canonical_matrix[line_count - 1][lower_place] = -(matrix_c[lower_place - 1])
+            if work_mode == "min":
+                canonical_matrix[line_count - 1][lower_place] = -matrix_c[lower_place - 1]
+            if work_mode == "max":
+                canonical_matrix[line_count - 1][lower_place] = matrix_c[lower_place - 1]
     return canonical_matrix
 
 
-def fix_define_resolve_parts(key_line, poor_matrix=np.array([])):
+def fix_define_resolve_parts(wrong_line, poor_matrix=np.array([])):
     resolve_column = -1
     divisions = []
     for i in range(1, poor_matrix.shape[0]):
-        if poor_matrix[key_line][i] < 0:
+        if poor_matrix[wrong_line][i] < 0:
             resolve_column = i
             break
     for i in range(poor_matrix.shape[1] - 1):
@@ -123,15 +127,41 @@ def change_simplex_table(res_parts, old_matrix=np.array([])):
     return new_matrix
 
 
-def printer(x_mat=[], matrix=np.array([])):
+def print_table(x_mat=[], matrix=np.array([])):
+    dist = find_space_distance(matrix)
+    numeration_line = "      "
+    for elem in x_mat[0]:
+        additional_string = elem + "  " * dist
+        numeration_line += additional_string
+    print(numeration_line)
+    for line in range(0, matrix.shape[1] - 1):
+        print(x_mat[1][line], " ", matrix[line])
+    print("F   ", matrix[matrix.shape[1] - 1])
+
+
+def print_result(work_mode, x_mat=[], matrix=np.array([])):
     print("Базис")
     for i in range(len(x_mat[1])):
-        print(x_mat[1][i] + " = " + str(matrix[i][0]))
-    print("F = " + str(matrix[matrix.shape[1] - 1][0]))
+        if x_mat[1][i] in unknown_vars:
+            print(x_mat[1][i] + " = " + str(round(matrix[i][0], 2)))
+    for i in range(len(x_mat[0])):
+        if x_mat[0][i] in unknown_vars:
+            print(x_mat[0][i] + " = 0")
+    if work_mode == "max":
+        print("F = " + str(round(-matrix[matrix.shape[1] - 1][0], 2)))
+    if work_mode == "min":
+        print("F = " + str(round(matrix[matrix.shape[1] - 1][0], 2)))
 
 
-d = do_matrix_in_canonical_form(a, b, c)  # Добавил flag
-print(d)
+def find_space_distance(matrix=np.array([])):
+    length_sum = 0
+    for elem in matrix[0]:
+        length_sum += len(str(elem))
+    return math.trunc(length_sum / (matrix.shape[0] * 1.6))
+
+
+d = do_matrix_in_canonical_form(flag, a, b, c)  # Добавил flag
+print_table(x_matrix, d)
 print("==================")
 
 while True:
@@ -147,28 +177,22 @@ while True:
     x_matrix = change_x_matrix(resolve_parts[0], resolve_parts[1], x_matrix)
     d = change_simplex_table(resolve_parts, d)
     print(resolve_parts)
-    print(d)
+    print_table(x_matrix, d)
     print("==================")
 
 while True:
     key_line = 0
-    if flag == "min":
-        for i in range(1, d.shape[0]):
-            if d[d.shape[1] - 1][i] > 0:
-                key_line = i
-                break
-    if flag == "max":
-        for i in range(1, d.shape[0]):
-            if d[d.shape[1] - 1][i] < 0:
-                key_line = i
-                break
+    for i in range(1, d.shape[0]):
+        if d[d.shape[1] - 1][i] > 0:
+            key_line = i
+            break
     if key_line == 0:
         break
     resolve_parts = regular_define_resolve_parts(key_line, d)
     x_matrix = change_x_matrix(resolve_parts[0], resolve_parts[1], x_matrix)
     d = change_simplex_table(resolve_parts, d)
     print(resolve_parts)
-    print(d)
+    print_table(x_matrix, d)
     print("==================")
 
-printer(x_matrix, d)
+print_result(flag, x_matrix, d)
