@@ -13,7 +13,7 @@ x_matrix = [["S", "x1", "x2", "x3"],
 
 unknown_vars = ["x1", "x2", "x3"]
 
-flag = "max"    # Добавил flag
+flag = "max"
 
 '''
 a = np.array([[-2, -1, 0],

@@ -18,264 +18,267 @@ class SimplexMethodComponents(object):
         return round(1 / resolveElem, 3)
 
     @staticmethod
-    def change_resolve_line_elements(resolve_elem, true_elem):
-        return round(true_elem / resolve_elem, 3)
+    def change_resolve_line_elements(resolveElem, trueElem):
+        return round(trueElem / resolveElem, 3)
 
     @staticmethod
-    def change_resolve_column_elements(resolve_elem, true_elem):
-        return -(round(true_elem / resolve_elem, 3))
+    def change_resolve_column_elements(resolveElem, trueElem):
+        return -(round(trueElem / resolveElem, 3))
 
     @staticmethod
-    def change_independent_elem(resolve_elem, true_elem, line_elem, column_elem):
-        return round(true_elem - (line_elem * column_elem) / resolve_elem, 3)
+    def change_independent_elem(resolveElem, trueElem, lineElem, columnElem):
+        return round(trueElem - (lineElem * columnElem) / resolveElem, 3)
 
     @staticmethod
-    def change_x_matrix(resolve_line, resolve_column, x_mat=None):
-        if x_mat is None:
-            x_mat = []
-        tmp_var = x_mat[0][resolve_column]
-        x_mat[0][resolve_column] = x_mat[1][resolve_line]
-        x_mat[1][resolve_line] = tmp_var
-        return x_mat
+    def change_x_matrix(resolveLine, resolveColumn, xMat=None):
+        if xMat is None:
+            xMat = []
+        tmp_var = xMat[0][resolveColumn]
+        xMat[0][resolveColumn] = xMat[1][resolveLine]
+        xMat[1][resolveLine] = tmp_var
+        return xMat
 
     @staticmethod
-    def do_matrix_in_canonical_form(work_mode, matrix_a=np.array([]), matrix_b=np.array([]), matrix_c=np.array([])):
-        column_count = matrix_a.shape[0] + 1
-        line_count = matrix_a.shape[1] + 1
-        size_of_new_matrix = a.shape[0] * a.shape[1] + b.shape[0] + c.shape[0] + 1
-        canonical_matrix = np.array(range(size_of_new_matrix), float).reshape(line_count, column_count)
+    def do_matrix_in_canonical_form(workMode, matrixA=np.array([]), matrixB=np.array([]), matrixC=np.array([])):
+        columnCount = matrixA.shape[0] + 1
+        lineCount = matrixA.shape[1] + 1
+        sizeOfNewMatrix = a.shape[0] * a.shape[1] + b.shape[0] + c.shape[0] + 1
+        canonicalMatrix = np.array(range(sizeOfNewMatrix), float).reshape(lineCount, columnCount)
 
-        for lines in range(0, line_count - 1):
-            for place in range(0, column_count):
+        for lines in range(0, lineCount - 1):
+            for place in range(0, columnCount):
                 if place == 0:
-                    canonical_matrix[lines][place] = matrix_b[lines]
+                    canonicalMatrix[lines][place] = matrixB[lines]
                 else:
-                    canonical_matrix[lines][place] = matrix_a[lines][place - 1]
+                    canonicalMatrix[lines][place] = matrixA[lines][place - 1]
 
-        for lower_place in range(0, column_count):
-            if lower_place == 0:
-                canonical_matrix[line_count - 1][lower_place] = 0
+        for lowerLinesElem in range(0, columnCount):
+            if lowerLinesElem == 0:
+                canonicalMatrix[lineCount - 1][lowerLinesElem] = 0
             else:
-                if work_mode == "min":
-                    canonical_matrix[line_count - 1][lower_place] = -matrix_c[lower_place - 1]
-                if work_mode == "max":
-                    canonical_matrix[line_count - 1][lower_place] = matrix_c[lower_place - 1]
-        return canonical_matrix
+                if workMode == "min":
+                    canonicalMatrix[lineCount - 1][lowerLinesElem] = -matrixC[lowerLinesElem - 1]
+                if workMode == "max":
+                    canonicalMatrix[lineCount - 1][lowerLinesElem] = matrixC[lowerLinesElem - 1]
+        return canonicalMatrix
 
     @staticmethod
-    def fix_define_resolve_parts(wrong_line, poor_matrix=np.array([])):
+    def fix_define_resolve_parts(wrongLine, poorMatrix=np.array([])):
         counter = 0  # =============
-        resolve_column = -1
+        resolveColumn = -1
         divisions = []
-        for i in range(1, poor_matrix.shape[0]):
-            if poor_matrix[wrong_line][i] < 0:
-                resolve_column = i
+        for elem in range(1, poorMatrix.shape[0]):
+            if poorMatrix[wrongLine][elem] < 0:
+                resolveColumn = elem
                 counter += 1
                 break
         if counter == 0:  # =============
             return "Error"  # =============
-        for i in range(poor_matrix.shape[1] - 1):
-            divisions.append(poor_matrix[i][0] / poor_matrix[i][resolve_column])
-        div_cop = divisions.copy()
-        min_div = min(divisions)
-        if min_div < 0:
-            while min_div < 0:
-                min_div = min(div_cop)
-                div_cop.remove(min_div)
-        resolve_line = divisions.index(min_div)
-        return [resolve_line, resolve_column]
+        for elem in range(poorMatrix.shape[1] - 1):
+            divisions.append(poorMatrix[elem][0] / poorMatrix[elem][resolveColumn])
+        divCopy = divisions.copy()
+        minDiv = min(divisions)
+        if minDiv < 0:
+            while minDiv < 0:
+                minDiv = min(divCopy)
+                divCopy.remove(minDiv)
+        resolveLine = divisions.index(minDiv)
+        return [resolveLine, resolveColumn]
 
     @staticmethod
-    def regular_define_resolve_parts(resolve_column, poor_matrix=np.array([])):
+    def regular_define_resolve_parts(resolveColumn, poorMatrix=np.array([])):
         divisions = []
-        for i in range(poor_matrix.shape[1] - 1):
-            if poor_matrix[i][resolve_column] == 0:
+        for i in range(poorMatrix.shape[1] - 1):
+            if poorMatrix[i][resolveColumn] == 0:
                 continue
-            divisions.append(poor_matrix[i][0] / poor_matrix[i][resolve_column])
-        div_cop = divisions.copy()
-        min_div = min(divisions)
-        if min_div < 0:
-            while min_div < 0:
-                min_div = min(div_cop)
-                div_cop.remove(min_div)
-        return [divisions.index(min_div), resolve_column]
+            divisions.append(poorMatrix[i][0] / poorMatrix[i][resolveColumn])
+        divCopy = divisions.copy()
+        minDiv = min(divisions)
+        if minDiv < 0:
+            while minDiv < 0:
+                minDiv = min(divCopy)
+                divCopy.remove(minDiv)
+        return [divisions.index(minDiv), resolveColumn]
 
     @staticmethod
-    def change_simplex_table(res_parts, old_matrix=np.array([])):
-        new_matrix = old_matrix.copy()
-        resolve_elem = old_matrix[res_parts[0]][res_parts[1]]
+    def change_simplex_table(resolveLineNColumn, oldMatrix=np.array([])):
+        newMatrix = oldMatrix.copy()
+        resolveElem = oldMatrix[resolveLineNColumn[0]][resolveLineNColumn[1]]
 
-        new_matrix[res_parts[0]][res_parts[1]] = SimplexMethodComponents.change_resolve_element(resolve_elem)
+        newMatrix[resolveLineNColumn[0]][resolveLineNColumn[1]] = SimplexMethodComponents.change_resolve_element(
+            resolveElem)
 
-        for i in range(res_parts[0] - 1, -1, -1):
-            if res_parts[0] == 0:
+        for elem in range(resolveLineNColumn[0] - 1, -1, -1):
+            if resolveLineNColumn[0] == 0:
                 break
-            true_elem = old_matrix[i][res_parts[1]]
-            new_matrix[i][res_parts[1]] = SimplexMethodComponents.change_resolve_column_elements(resolve_elem,
-                                                                                                 true_elem)
+            trueElem = oldMatrix[elem][resolveLineNColumn[1]]
+            newMatrix[elem][resolveLineNColumn[1]] = SimplexMethodComponents.change_resolve_column_elements(resolveElem,
+                                                                                                            trueElem)
 
-        for i in range(res_parts[0] + 1, old_matrix.shape[1]):
-            if res_parts[0] == old_matrix.shape[1] - 1:
+        for elem in range(resolveLineNColumn[0] + 1, oldMatrix.shape[1]):
+            if resolveLineNColumn[0] == oldMatrix.shape[1] - 1:
                 break
-            true_elem = old_matrix[i][res_parts[1]]
-            new_matrix[i][res_parts[1]] = SimplexMethodComponents.change_resolve_column_elements(resolve_elem,
-                                                                                                 true_elem)
+            trueElem = oldMatrix[elem][resolveLineNColumn[1]]
+            newMatrix[elem][resolveLineNColumn[1]] = SimplexMethodComponents.change_resolve_column_elements(resolveElem,
+                                                                                                            trueElem)
 
-        for i in range(res_parts[1] - 1, -1, -1):
-            if res_parts[1] == 0:
+        for elem in range(resolveLineNColumn[1] - 1, -1, -1):
+            if resolveLineNColumn[1] == 0:
                 break
-            true_elem = old_matrix[res_parts[0]][i]
-            new_matrix[res_parts[0]][i] = SimplexMethodComponents.change_resolve_line_elements(resolve_elem, true_elem)
+            trueElem = oldMatrix[resolveLineNColumn[0]][elem]
+            newMatrix[resolveLineNColumn[0]][elem] = SimplexMethodComponents.change_resolve_line_elements(resolveElem,
+                                                                                                          trueElem)
 
-        for i in range(res_parts[1] + 1, old_matrix.shape[0]):
-            if res_parts[1] == old_matrix.shape[0] - 1:
+        for elem in range(resolveLineNColumn[1] + 1, oldMatrix.shape[0]):
+            if resolveLineNColumn[1] == oldMatrix.shape[0] - 1:
                 break
-            true_elem = old_matrix[res_parts[0]][i]
-            new_matrix[res_parts[0]][i] = SimplexMethodComponents.change_resolve_line_elements(resolve_elem, true_elem)
+            trueElem = oldMatrix[resolveLineNColumn[0]][elem]
+            newMatrix[resolveLineNColumn[0]][elem] = SimplexMethodComponents.change_resolve_line_elements(resolveElem,
+                                                                                                          trueElem)
 
-        for i in range(0, old_matrix.shape[0]):
-            if i == res_parts[1]:
+        for elem in range(0, oldMatrix.shape[0]):
+            if elem == resolveLineNColumn[1]:
                 continue
-            for j in range(0, old_matrix.shape[1]):
-                if j == res_parts[0]:
+            for line in range(0, oldMatrix.shape[1]):
+                if line == resolveLineNColumn[0]:
                     continue
-                true_elem = old_matrix[j][i]
-                line_elem = old_matrix[j][res_parts[1]]
-                column_elem = old_matrix[res_parts[0]][i]
-                new_matrix[j][i] = SimplexMethodComponents.change_independent_elem(resolve_elem, true_elem, line_elem,
-                                                                                   column_elem)
-        return new_matrix
+                trueElem = oldMatrix[line][elem]
+                line_elem = oldMatrix[line][resolveLineNColumn[1]]
+                column_elem = oldMatrix[resolveLineNColumn[0]][elem]
+                newMatrix[line][elem] = SimplexMethodComponents.change_independent_elem(resolveElem, trueElem, line_elem,
+                                                                                        column_elem)
+        return newMatrix
 
 
 class PrintForSimplexMethod(object):
     @staticmethod
     def find_space_distance(matrix=np.array([])):
-        length_sum = 0
+        lengthSum = 0
         for elem in matrix[0]:
-            length_sum += len(str(elem))
-        return math.trunc(length_sum / (matrix.shape[0] * 1.6))
+            lengthSum += len(str(elem))
+        return math.trunc(lengthSum / (matrix.shape[0] * 1.6))
 
     @staticmethod
-    def print_table(x_mat=None, matrix=np.array([])):
-        if x_mat is None:
-            x_mat = []
+    def print_table(xMat=None, matrix=np.array([])):
+        if xMat is None:
+            xMat = []
         dist = PrintForSimplexMethod.find_space_distance(matrix)
-        numeration_line = "      "
-        for elem in x_mat[0]:
-            additional_string = elem + "  " * dist
-            numeration_line += additional_string
-        print(numeration_line)
+        numerationLine = "      "
+        for elem in xMat[0]:
+            additionalString = elem + "  " * dist
+            numerationLine += additionalString
+        print(numerationLine)
         for line in range(0, matrix.shape[1] - 1):
-            print(x_mat[1][line], " ", matrix[line])
+            print(xMat[1][line], " ", matrix[line])
         print("F   ", matrix[matrix.shape[1] - 1])
 
     @staticmethod
-    def print_result(work_mode, x_mat=None, matrix=np.array([])):
-        if x_mat is None:
-            x_mat = []
+    def print_result(workMode, xMat=None, matrix=np.array([])):
+        if xMat is None:
+            xMat = []
         print("Базис")
-        for i in range(len(x_mat[1])):
-            if x_mat[1][i] in unknown_vars:
-                print(x_mat[1][i] + " = " + str(round(matrix[i][0], 2)))
-        for i in range(len(x_mat[0])):
-            if x_mat[0][i] in unknown_vars:
-                print(x_mat[0][i] + " = 0")
-        if work_mode == "max":
+        for i in range(len(xMat[1])):
+            if xMat[1][i] in unknown_vars:
+                print(xMat[1][i] + " = " + str(round(matrix[i][0], 2)))
+        for i in range(len(xMat[0])):
+            if xMat[0][i] in unknown_vars:
+                print(xMat[0][i] + " = 0")
+        if workMode == "max":
             print("F = " + str(round(-matrix[matrix.shape[1] - 1][0], 2)))
-        if work_mode == "min":
+        if workMode == "min":
             print("F = " + str(round(matrix[matrix.shape[1] - 1][0], 2)))
 
 
 class MainActions(object):
 
     @staticmethod
-    def revise_incorrect_table(x_mat=None, incorrect_matrix=np.array([])):
-        if x_mat is None:
-            x_mat = []
+    def revise_incorrect_table(xMat=None, incorrectMatrix=np.array([])):
+        if xMat is None:
+            xMat = []
         while True:
             counter = 0
-            incorrect_line = -1
-            for index in range(incorrect_matrix.shape[1] - 1):
-                if incorrect_matrix[index][0] < 0:
-                    incorrect_line = index
+            incorrectLine = -1
+            for index in range(incorrectMatrix.shape[1] - 1):
+                if incorrectMatrix[index][0] < 0:
+                    incorrectLine = index
                     counter += 1
 
-            if incorrect_line == -1:
+            if incorrectLine == -1:
                 break
 
             try:
-                resolve_line_column = SimplexMethodComponents.fix_define_resolve_parts(incorrect_line, incorrect_matrix)
-                if resolve_line_column == "Error":
+                resolveLineColumn = SimplexMethodComponents.fix_define_resolve_parts(incorrectLine, incorrectMatrix)
+                if resolveLineColumn == "Error":
                     raise NoAnswers('Решений не существует!!!')
             except NoAnswers as e:
                 print(e)
                 return "Error"
-            x_mat = SimplexMethodComponents.change_x_matrix(resolve_line_column[0], resolve_line_column[1], x_mat)
-            incorrect_matrix = SimplexMethodComponents.change_simplex_table(resolve_line_column, incorrect_matrix)
-            print(resolve_line_column)
-            PrintForSimplexMethod.print_table(x_mat, incorrect_matrix)
+            xMat = SimplexMethodComponents.change_x_matrix(resolveLineColumn[0], resolveLineColumn[1], xMat)
+            incorrectMatrix = SimplexMethodComponents.change_simplex_table(resolveLineColumn, incorrectMatrix)
+            print(resolveLineColumn)
+            PrintForSimplexMethod.print_table(xMat, incorrectMatrix)
             print("==================")
-        return [x_mat, incorrect_matrix]
+        return [xMat, incorrectMatrix]
 
     @staticmethod
-    def main_part(work_mode, x_mat=None, main_matrix=np.array([])):
-        if x_mat is None:
-            x_mat = []
+    def main_part(workMode, xMat=None, mainMatrix=np.array([])):
+        if xMat is None:
+            xMat = []
         while True:
-            key_line = 0
-            for index in range(1, main_matrix.shape[0]):
-                if main_matrix[main_matrix.shape[1] - 1][index] > 0:
-                    key_line = index
+            keyLine = 0
+            for index in range(1, mainMatrix.shape[0]):
+                if mainMatrix[mainMatrix.shape[1] - 1][index] > 0:
+                    keyLine = index
                     break
-            if key_line == 0:
+            if keyLine == 0:
                 break
-            resolve_parts = SimplexMethodComponents.regular_define_resolve_parts(key_line, main_matrix)
-            x_mat = SimplexMethodComponents.change_x_matrix(resolve_parts[0], resolve_parts[1], x_mat)
-            main_matrix = SimplexMethodComponents.change_simplex_table(resolve_parts, main_matrix)
-            print(resolve_parts)
-            PrintForSimplexMethod.print_table(x_mat, main_matrix)
+            resolveLineNColumn = SimplexMethodComponents.regular_define_resolve_parts(keyLine, mainMatrix)
+            xMat = SimplexMethodComponents.change_x_matrix(resolveLineNColumn[0], resolveLineNColumn[1], xMat)
+            mainMatrix = SimplexMethodComponents.change_simplex_table(resolveLineNColumn, mainMatrix)
+            print(resolveLineNColumn)
+            PrintForSimplexMethod.print_table(xMat, mainMatrix)
             print("==================")
-        PrintForSimplexMethod.print_result(work_mode, x_mat, main_matrix)
+        PrintForSimplexMethod.print_result(workMode, xMat, mainMatrix)
 
 
 class TypeOfProblem(object):
     @staticmethod
-    def direct_problem(work_mode, x_mat=None, direct_matrix=np.array([])):
-        if x_mat is None:
-            x_mat = []
+    def direct_problem(workMode, xMat=None, directMatrix=np.array([])):
+        if xMat is None:
+            xMat = []
 
-        PrintForSimplexMethod.print_table(x_mat, direct_matrix)
+        PrintForSimplexMethod.print_table(xMat, directMatrix)
         print("==================")
 
-        p = MainActions.revise_incorrect_table(x_mat, direct_matrix)
-        if p == "Error":
+        correctMatrix = MainActions.revise_incorrect_table(xMat, directMatrix)
+        if correctMatrix == "Error":
             return "Error"
 
-        x_mat = p[0]
-        direct_matrix = p[1]
+        xMat = correctMatrix[0]
+        directMatrix = correctMatrix[1]
 
-        MainActions.main_part(work_mode, x_mat, direct_matrix)
+        MainActions.main_part(workMode, xMat, directMatrix)
 
     @staticmethod
-    def dual_problem(work_mode, x_mat=None, matrix_a=np.array([]), matrix_b=np.array([]), matrix_c=np.array([])):
-        if work_mode == "min":
-            work_mode = "max"
+    def dual_problem(workMode, xMat=None, matrixA=np.array([]), matrixB=np.array([]), matrixC=np.array([])):
+        if workMode == "min":
+            workMode = "max"
         else:
-            work_mode = "min"
+            workMode = "min"
 
-        matrix_a = matrix_a.transpose()
-        temp_matrix = matrix_b
-        matrix_b = matrix_c
-        matrix_c = temp_matrix
+        matrixA = matrixA.transpose()
+        tempMatrix = matrixB
+        matrixB = matrixC
+        matrixC = tempMatrix
 
-        dual_matrix = SimplexMethodComponents.do_matrix_in_canonical_form(work_mode, matrix_a, matrix_b, matrix_c)
+        dual_matrix = SimplexMethodComponents.do_matrix_in_canonical_form(workMode, matrixA, matrixB, matrixC)
         for line in range(dual_matrix.shape[1] - 1):
             for elem in range(dual_matrix.shape[0]):
                 dual_matrix[line][elem] *= -1
-        TypeOfProblem.direct_problem(work_mode, x_mat, dual_matrix)
+        TypeOfProblem.direct_problem(workMode, xMat, dual_matrix)
 
 
 if __name__ == "__main__":
     d_matrix = SimplexMethodComponents.do_matrix_in_canonical_form(flag, a, b, c)
-    #TypeOfProblem.direct_problem(flag, x_matrix, d_matrix)
-    TypeOfProblem.dual_problem(flag, x_matrix, a, b, c)
+    TypeOfProblem.direct_problem(flag, x_matrix, d_matrix)
+    #TypeOfProblem.dual_problem(flag, x_matrix, a, b, c)
