@@ -61,12 +61,16 @@ def do_matrix_in_canonical_form(work_mode, matrix_a=np.array([]), matrix_b=np.ar
 
 
 def fix_define_resolve_parts(wrong_line, poor_matrix=np.array([])):
+    counter = 0 #=============
     resolve_column = -1
     divisions = []
     for i in range(1, poor_matrix.shape[0]):
         if poor_matrix[wrong_line][i] < 0:
             resolve_column = i
+            counter += 1
             break
+    if counter == 0:    #=============
+        return "Error"    #=============
     for i in range(poor_matrix.shape[1] - 1):
         divisions.append(poor_matrix[i][0] / poor_matrix[i][resolve_column])
     div_cop = divisions.copy()
@@ -178,15 +182,23 @@ def revise_incorrect_table(x_mat=None, incorrect_matrix=np.array([])):
     if x_mat is None:
         x_mat = []
     while True:
+        counter = 0
         incorrect_line = -1
         for index in range(incorrect_matrix.shape[1] - 1):
             if incorrect_matrix[index][0] < 0:
                 incorrect_line = index
+                counter += 1
 
         if incorrect_line == -1:
             break
 
-        resolve_line_column = fix_define_resolve_parts(incorrect_line, incorrect_matrix)
+        try:
+            resolve_line_column = fix_define_resolve_parts(incorrect_line, incorrect_matrix)
+            if resolve_line_column == "Error":
+                raise NoAnswers('Решений не существует!!!')
+        except NoAnswers as e:
+            print(e)
+            return "Error"
         x_mat = change_x_matrix(resolve_line_column[0], resolve_line_column[1], x_mat)
         incorrect_matrix = change_simplex_table(resolve_line_column, incorrect_matrix)
         print(resolve_line_column)
@@ -223,6 +235,9 @@ def direct_problem(work_mode, x_mat=None, direct_matrix=np.array([])):
     print("==================")
 
     p = revise_incorrect_table(x_mat, direct_matrix)
+    if p == "Error":
+        return "Error"
+
     x_mat = p[0]
     direct_matrix = p[1]
 
@@ -251,5 +266,5 @@ def dual_problem(work_mode, x_mat=None, matrix_a=np.array([]), matrix_b=np.array
 
 if __name__ == "__main__":
     work_matrix = do_matrix_in_canonical_form(flag, a, b, c)
-    # direct_problem(flag, x_matrix, work_matrix)
-    dual_problem(flag, x_matrix, a, b, c)
+    direct_problem(flag, x_matrix, work_matrix)
+    #dual_problem(flag, x_matrix, a, b, c)
