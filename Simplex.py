@@ -11,6 +11,44 @@ class NoAnswers(Exception):
         return repr(self.info)
 
 
+class WorkWithBasicMatrix(object):
+    @staticmethod
+    def redactingBasicMatrix(matrixCondition=None, matrixA=np.array([]), matrixB=np.array([])):
+        if matrixCondition is None:
+            matrixCondition = []
+        for index in range(len(matrixCondition)):
+            if matrixCondition[index] == '>=':
+                matrixB[index] = matrixB[index] * (-1)
+                for elem in range(matrixA.shape[0]):
+                    matrixA[index][elem] = matrixA[index][elem] * (-1)
+        return [matrixA, matrixB]
+
+    @staticmethod
+    def createUnknownVarsMatrix(matrixC=np.array([])):
+        variables = []
+        for index in range(matrixC.shape[0]):
+            variables.append(f'x{index + 1}')
+        return variables
+
+    @staticmethod
+    def createXMatrix(matrixCondition=None, matrixC=np.array([])):
+        xM = []
+        tempMatrix = []
+        if matrixCondition is None:
+            matrixCondition = []
+        for index in range(matrixC.shape[0]):
+            if index == 0:
+                tempMatrix.append('S')
+            tempMatrix.append(f'x{index + 1}')
+        xM.append(tempMatrix.copy())
+        tempMatrix.clear()
+        for index in range(len(matrixCondition)):
+            tempMatrix.append(f'x{index + 1 + matrixC.shape[0]}')
+        xM.append(tempMatrix.copy())
+        tempMatrix.clear()
+        return xM
+
+
 class SimplexMethodComponents(object):
 
     @staticmethod
@@ -145,7 +183,8 @@ class SimplexMethodComponents(object):
                 trueElem = oldMatrix[line][elem]
                 line_elem = oldMatrix[line][resolveLineNColumn[1]]
                 column_elem = oldMatrix[resolveLineNColumn[0]][elem]
-                newMatrix[line][elem] = SimplexMethodComponents.change_independent_elem(resolveElem, trueElem, line_elem,
+                newMatrix[line][elem] = SimplexMethodComponents.change_independent_elem(resolveElem, trueElem,
+                                                                                        line_elem,
                                                                                         column_elem)
         return newMatrix
 
@@ -176,12 +215,13 @@ class PrintForSimplexMethod(object):
     def print_result(workMode, xMat=None, matrix=np.array([])):
         if xMat is None:
             xMat = []
+        unknownVars = WorkWithBasicMatrix.createUnknownVarsMatrix(c)
         print("Базис")
         for i in range(len(xMat[1])):
-            if xMat[1][i] in unknown_vars:
+            if xMat[1][i] in unknownVars:
                 print(xMat[1][i] + " = " + str(round(matrix[i][0], 2)))
         for i in range(len(xMat[0])):
-            if xMat[0][i] in unknown_vars:
+            if xMat[0][i] in unknownVars:
                 print(xMat[0][i] + " = 0")
         if workMode == "max":
             print("F = " + str(round(-matrix[matrix.shape[1] - 1][0], 2)))
@@ -190,9 +230,8 @@ class PrintForSimplexMethod(object):
 
 
 class MainActions(object):
-
     @staticmethod
-    def revise_incorrect_table(xMat=None, incorrectMatrix=np.array([])):
+    def revisingIncorrectTable(xMat=None, incorrectMatrix=np.array([])):
         if xMat is None:
             xMat = []
         while True:
@@ -221,7 +260,7 @@ class MainActions(object):
         return [xMat, incorrectMatrix]
 
     @staticmethod
-    def main_part(workMode, xMat=None, mainMatrix=np.array([])):
+    def optimizingSolution(workMode, xMat=None, mainMatrix=np.array([])):
         if xMat is None:
             xMat = []
         while True:
@@ -250,14 +289,14 @@ class TypeOfProblem(object):
         PrintForSimplexMethod.print_table(xMat, directMatrix)
         print("==================")
 
-        correctMatrix = MainActions.revise_incorrect_table(xMat, directMatrix)
+        correctMatrix = MainActions.revisingIncorrectTable(xMat, directMatrix)
         if correctMatrix == "Error":
             return "Error"
 
         xMat = correctMatrix[0]
         directMatrix = correctMatrix[1]
 
-        MainActions.main_part(workMode, xMat, directMatrix)
+        MainActions.optimizingSolution(workMode, xMat, directMatrix)
 
     @staticmethod
     def dual_problem(workMode, xMat=None, matrixA=np.array([]), matrixB=np.array([]), matrixC=np.array([])):
@@ -279,6 +318,9 @@ class TypeOfProblem(object):
 
 
 if __name__ == "__main__":
+    xMatrix = WorkWithBasicMatrix.createXMatrix(condition, c)
+    newMatrix = WorkWithBasicMatrix.redactingBasicMatrix(condition, a, b)
+    a = newMatrix[0]
+    b = newMatrix[1]
     d_matrix = SimplexMethodComponents.do_matrix_in_canonical_form(flag, a, b, c)
-    TypeOfProblem.direct_problem(flag, x_matrix, d_matrix)
-    #TypeOfProblem.dual_problem(flag, x_matrix, a, b, c)
+    TypeOfProblem.direct_problem(flag, xMatrix, d_matrix)
