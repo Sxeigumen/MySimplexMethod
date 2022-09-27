@@ -3,14 +3,6 @@ import numpy as np
 from data_off_problem import *
 
 
-class NoAnswers(Exception):
-    def __init__(self, info):
-        self.info = info
-
-    def __str__(self):
-        return repr(self.info)
-
-
 class WorkWithBasicMatrix(object):
     @staticmethod
     def redactingBasicMatrix(matrixCondition=None, matrixA=np.array([]), matrixB=np.array([])):
@@ -71,9 +63,9 @@ class SimplexMethodComponents(object):
     def change_x_matrix(resolveLine, resolveColumn, xMat=None):
         if xMat is None:
             xMat = []
-        tmp_var = xMat[0][resolveColumn]
+        tmpVar = xMat[0][resolveColumn]
         xMat[0][resolveColumn] = xMat[1][resolveLine]
-        xMat[1][resolveLine] = tmp_var
+        xMat[1][resolveLine] = tmpVar
         return xMat
 
     @staticmethod
@@ -102,41 +94,49 @@ class SimplexMethodComponents(object):
 
     @staticmethod
     def fix_define_resolve_parts(wrongLine, poorMatrix=np.array([])):
-        counter = 0  # =============
+        counter = 0
         resolveColumn = -1
-        divisions = []
+        divisionResults = []
         for elem in range(1, poorMatrix.shape[0]):
             if poorMatrix[wrongLine][elem] < 0:
                 resolveColumn = elem
                 counter += 1
                 break
-        if counter == 0:  # =============
-            return "Error"  # =============
+        if counter == 0:
+            print("Нет решений")
+            exit(0)
         for elem in range(poorMatrix.shape[1] - 1):
-            divisions.append(poorMatrix[elem][0] / poorMatrix[elem][resolveColumn])
-        divCopy = divisions.copy()
-        minDiv = min(divisions)
+            divisionResults.append(poorMatrix[elem][0] / poorMatrix[elem][resolveColumn])
+        divCopy = divisionResults.copy()
+        minDiv = min(divisionResults)
         if minDiv < 0:
             while minDiv < 0:
                 minDiv = min(divCopy)
                 divCopy.remove(minDiv)
-        resolveLine = divisions.index(minDiv)
+        resolveLine = divisionResults.index(minDiv)
         return [resolveLine, resolveColumn]
 
     @staticmethod
     def regular_define_resolve_parts(resolveColumn, poorMatrix=np.array([])):
-        divisions = []
+        divisionResults = []
+
         for i in range(poorMatrix.shape[1] - 1):
             if poorMatrix[i][resolveColumn] == 0:
                 continue
-            divisions.append(poorMatrix[i][0] / poorMatrix[i][resolveColumn])
-        divCopy = divisions.copy()
-        minDiv = min(divisions)
-        if minDiv < 0:
-            while minDiv < 0:
-                minDiv = min(divCopy)
-                divCopy.remove(minDiv)
-        return [divisions.index(minDiv), resolveColumn]
+            divisionResults.append(poorMatrix[i][0] / poorMatrix[i][resolveColumn])
+
+        divisionResultsCopy = divisionResults.copy()
+        minDivisionResult = min(divisionResults)
+
+        if minDivisionResult < 0:
+            while minDivisionResult < 0:
+                if len(divisionResultsCopy) == 0:
+                    print("Решений бесконечно много!")
+                    exit(0)
+                minDivisionResult = min(divisionResultsCopy)
+                divisionResultsCopy.remove(minDivisionResult)
+
+        return [divisionResults.index(minDivisionResult), resolveColumn]
 
     @staticmethod
     def change_simplex_table(resolveLineNColumn, oldMatrix=np.array([])):
@@ -245,13 +245,7 @@ class MainActions(object):
             if incorrectLine == -1:
                 break
 
-            try:
-                resolveLineColumn = SimplexMethodComponents.fix_define_resolve_parts(incorrectLine, incorrectMatrix)
-                if resolveLineColumn == "Error":
-                    raise NoAnswers('Решений не существует!!!')
-            except NoAnswers as e:
-                print(e)
-                return "Error"
+            resolveLineColumn = SimplexMethodComponents.fix_define_resolve_parts(incorrectLine, incorrectMatrix)
             xMat = SimplexMethodComponents.change_x_matrix(resolveLineColumn[0], resolveLineColumn[1], xMat)
             incorrectMatrix = SimplexMethodComponents.change_simplex_table(resolveLineColumn, incorrectMatrix)
             print(resolveLineColumn)
@@ -290,8 +284,6 @@ class TypeOfProblem(object):
         print("==================")
 
         correctMatrix = MainActions.revisingIncorrectTable(xMat, directMatrix)
-        if correctMatrix == "Error":
-            return "Error"
 
         xMat = correctMatrix[0]
         directMatrix = correctMatrix[1]
