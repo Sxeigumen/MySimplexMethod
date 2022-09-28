@@ -314,5 +314,7 @@ if __name__ == "__main__":
     newMatrix = WorkWithBasicMatrix.redactingBasicMatrix(condition, a, b)
     a = newMatrix[0]
     b = newMatrix[1]
-    d_matrix = SimplexMethodComponents.do_matrix_in_canonical_form(flag, a, b, c)
-    TypeOfProblem.direct_problem(flag, xMatrix, d_matrix)
+    directMatrix = SimplexMethodComponents.do_matrix_in_canonical_form(flag, a, b, c)
+    PrintForSimplexMethod.print_table(xMatrix, directMatrix)
+    print("===================")
+    TypeOfProblem.dual_problem(flag, xMatrix, a, b, c)
